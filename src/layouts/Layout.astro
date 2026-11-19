@@ -1,0 +1,102 @@
+---
+import '@fontsource/barlow-condensed/700.css';
+import '@fontsource/barlow/400.css';
+import '@fontsource/barlow/500.css';
+import displayFont from '@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2?url';
+import textFont from '@fontsource/barlow/files/barlow-latin-400-normal.woff2?url';
+import '../styles/global.css';
+import { site } from '../data/site';
+import { found, footage } from '../data/media';
+interface Props { title?: string; description?: string; }
+const { title = 'Robotics & Embedded Systems Engineer', description = 'Travimadox Webb — robotics, perception and embedded systems. MSc (Eng) candidate at UCT building semantic mapping and autonomous navigation for field robots.' } = Astro.props;
+const nav = [['Work','/projects/'], ['Research','/research/'], ['Experience','/experience/'], ['About','/about/']];
+const more = [['CV', '/cv/'], ['Contact', '/contact/']];
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+const schema = { '@context': 'https://schema.org', '@type': 'Person', name: site.name, jobTitle: 'Robotics & Embedded Systems Engineer', alumniOf: { '@type': 'CollegeOrUniversity', name: 'University of Cape Town' }, sameAs: [site.linkedin, site.github], ...(Astro.site ? {url: Astro.site.href} : {}) };
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>{site.name} | {title}</title><meta name="description" content={description}/>
+    {canonical && <link rel="canonical" href={canonical}/>}
+    <meta name="theme-color" content="#ffd23f"/>
+    <meta property="og:type" content="website"/><meta property="og:title" content={`${site.name} | ${title}`}/><meta property="og:description" content={description}/>
+    {canonical && <meta property="og:url" content={canonical}/>}
+    <meta property="og:image" content={Astro.site ? new URL('/social-card.png', Astro.site).href : '/social-card.png'}/>
+    <meta property="og:image:alt" content="Travimadox Webb — Robotics, Perception, Embedded Systems"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin="anonymous"/>
+    <link rel="preload" href={textFont} as="font" type="font/woff2" crossorigin="anonymous"/>
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      try { const t = localStorage.getItem('theme'); if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t; } catch {}
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(schema)}/>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-row">
+        <a class="wordmark" href="/">Travimadox Webb<span class="sr-only">, home</span></a>
+        <nav class="desktop-nav" aria-label="Main navigation">{nav.map(([label, href]) => <a href={href} aria-current={Astro.url.pathname.startsWith(href) ? 'page' : undefined}>{label}</a>)}</nav>
+        <div class="header-actions">
+          {site.cv ? <a class="header-link" href={site.cv}>CV</a> : <span class="header-note" title="The latest CV PDF has not been supplied">CV pending</span>}
+          <button class="theme-toggle header-link" type="button" aria-label="Switch colour theme" title="Switch colour theme"><span class="theme-word-dark">Dark</span><span class="theme-word-light">Light</span></button>
+          <details class="mobile-menu"><summary>Menu</summary><nav aria-label="Mobile navigation">{[...nav, ...more].map(([label, href]) => <a href={href}>{label}</a>)}<button class="theme-toggle menu-theme" type="button" aria-label="Switch colour theme"><span class="theme-word-dark">Dark theme</span><span class="theme-word-light">Light theme</span></button></nav></details>
+          <a class="button" href="/contact/">Contact</a>
+        </div>
+      </div>
+    </header>
+    <main id="main"><slot/></main>
+    <footer class="site-footer" data-chapter="yellow">
+      <div class="shell footer-columns">
+        <div><p class="footer-lead">Write to me</p><a href={`mailto:${site.email}`}>{site.email}</a><p>Cape Town, South Africa</p></div>
+        <div><p class="footer-lead">Pages</p>{[...nav, ...more].map(([label, href]) => <a href={href}>{label}</a>)}</div>
+        <div><p class="footer-lead">Elsewhere</p><a href={site.linkedin}>LinkedIn</a><a href={site.github}>GitHub</a></div>
+        <div class="footer-credits"><p class="footer-lead">Photographs</p><p>Upper campus: Photo: University of Cape Town.</p><p>Openly licensed views of the world around the work, via Wikimedia Commons:</p>{[...Object.values(found), ...Object.values(footage)].map(f => <a href={f.page}>{f.credit}</a>)}</div>
+      </div>
+      <div class="shell footer-mark">
+        <svg viewBox="0 0 1000 118" role="img" aria-label="Travimadox Webb"><text x="500" y="112" text-anchor="middle" textLength="996" lengthAdjust="spacingAndGlyphs">TRAVIMADOX WEBB</text></svg>
+        <p>© {new Date().getFullYear()} Travimadox Webb · Robotics, from perception to deployment.</p>
+      </div>
+    </footer>
+    <script>
+      document.querySelectorAll<HTMLButtonElement>('.theme-toggle').forEach(button => button.addEventListener('click', () => {
+        const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = dark ? 'light' : 'dark';
+        document.documentElement.dataset.theme = theme;
+        try { localStorage.setItem('theme', theme); } catch {}
+      }));
+      const menu = document.querySelector<HTMLDetailsElement>('.mobile-menu');
+      document.addEventListener('keydown', event => { if (event.key === 'Escape' && menu?.open) { menu.open = false; menu.querySelector('summary')?.focus(); } });
+
+      // Each chapter paints its own field; the header takes the field of the chapter under it.
+      const header = document.querySelector<HTMLElement>('.site-header');
+      const chapters = document.querySelectorAll<HTMLElement>('[data-chapter]');
+      if (header && 'IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+          for (const entry of entries) if (entry.isIntersecting) header.dataset.on = (entry.target as HTMLElement).dataset.chapter;
+        }, { rootMargin: '-40px 0px -95% 0px' });
+        chapters.forEach(chapter => io.observe(chapter));
+      }
+
+      // A silent loop is decoration: hold it on its poster frame for reduced motion.
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) document.querySelectorAll<HTMLVideoElement>('video[autoplay]').forEach(v => { v.removeAttribute('autoplay'); v.pause(); });
+
+      // Reveal the parts of each section once, as it enters. Content stays visible without script.
+      document.querySelectorAll('.prose > *, .timeline-entry > div > *').forEach(el => el.setAttribute('data-reveal', ''));
+      // Wide tables scroll sideways on phones; keyboard users need to reach them.
+      document.querySelectorAll('.prose table').forEach(table => table.setAttribute('tabindex', '0'));
+      const reveals = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(entries => {
+          for (const entry of entries) if (entry.isIntersecting) { entry.target.classList.add('is-in'); io.unobserve(entry.target); }
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+        reveals.forEach(el => io.observe(el));
+        addEventListener('load', () => setTimeout(() => reveals.forEach(el => { const r = el.getBoundingClientRect(); if (r.top < innerHeight && r.bottom > 0) el.classList.add('is-in'); }), 2500));
+      } else reveals.forEach(el => el.classList.add('is-in'));
+    </script>
+  </body>
+</html>

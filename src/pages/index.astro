@@ -1,0 +1,138 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import BevMap from '../components/BevMap.astro';
+import ContactField from '../components/ContactField.astro';
+import { site, capabilities, experience } from '../data/site';
+import { found, robots, field, uct as campus } from '../data/media';
+import { paper } from '../data/site';
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const spineTitle: Record<string, string> = { sana: 'SANA', 'agricultural-scanner': 'Agricultural scanner', 'lodox-denoising': 'LODOX denoising', 'african-music-compression': 'Amapiano compression', 'origami-robotics': 'Origami robots', 'hornbill-monitoring': 'Hornbill scale', 'acotriangulator': 'Acotriangulator', 'stm32-sense-hat': 'Sensor HAT', 'cocoa-detection': 'Cocoa detection' };
+const tagField = { Robotics: 'yellow', 'ML/CV': 'green', Embedded: 'cyan', Research: 'orange' } as const;
+const uct = experience.filter(e => e.org === 'University of Cape Town');
+const industry = experience.filter(e => e.org !== 'University of Cape Town');
+---
+<Layout>
+  <section class="hero" aria-labelledby="hero-title" data-chapter="paper">
+    <h1 id="hero-title" class="hero-title">
+      <span class="hero-ink hero-ink-top">Travimadox<br/>Webb</span>
+      <span class="hero-ink hero-ink-bottom" aria-hidden="true">Travimadox<br/>Webb</span>
+    </h1>
+    <div class="hero-lower" data-chapter="yellow">
+      <p class="hero-support shell">Robotics and embedded systems engineer in Cape Town. I build robots that read the crop rows they drive through, and the electronics that keep them running.</p>
+    </div>
+  </section>
+
+  <section class="hero-facts" aria-labelledby="facts-title" data-chapter="yellow">
+    <div class="shell facts-row">
+      <h2 id="facts-title" class="sr-only">At a glance</h2>
+      <p><strong>Now</strong> MSc (Eng) in Robotics & Computer Vision at the University of Cape Town. Mastercard Foundation Scholar.</p>
+      <p><strong>Teaching</strong> Assistant lecturer for Embedded Systems II (EEE3096S), leading its tutor team.</p>
+      {site.openToOpportunities && <p><strong>Open to</strong> Embedded, ML/CV and robotics engineering roles. <a class="inline-link" href="/contact/">Get in touch</a></p>}
+    </div>
+  </section>
+
+  <section class="sana field-green" aria-labelledby="sana-title" data-chapter="green">
+    <div class="shell sana-grid">
+      <div class="sana-copy">
+        <h2 id="sana-title" class="section-title" data-reveal>SANA reads the rows</h2>
+        <p class="lead" data-reveal>My MSc thesis is a teach-free navigation system for row crops. Perception writes a persistent bird’s-eye-view map of the field; a learned policy reads it and drives a Clearpath Husky A300 down the rows.</p>
+        <ol class="flow" data-reveal>
+          <li><strong>Perception.</strong> Stereo cameras, 3D LiDAR and an IMU, with YOLOE as the open-vocabulary detector.</li>
+          <li><strong>The map.</strong> An egocentric K×V×V tensor of 5 cm cells, aggregated by max pooling. It is the one interface between seeing and driving.</li>
+          <li><strong>The policy.</strong> Behavioural cloning, retrained with DAgger, reading a 7-D feature vector: row offset, heading error, row densities, obstacle clearance and yaw.</li>
+          <li><strong>Safety.</strong> A finite-state RowNavPolicy handles row ends and headland turns; a SafetyFilter overrides the policy near obstacles.</li>
+        </ol>
+        <p class="sana-status" data-reveal>Everything runs live on the robot: ROS 2 Jazzy on a ZED Box Jetson Orin NX, with no crop- or farm-specific detector training. I compared it against Visual Teach & Repeat with four pre-registered hypotheses.</p>
+        <div class="sana-actions" data-reveal><a class="button" href="/projects/sana/">Read the SANA case study</a><a class="inline-link" href={paper.pdf}>Read the SATNAC 2026 paper</a></div>
+      </div>
+      <div class="sana-live" data-reveal>
+        <h3 class="sr-only">Steer the robot through a simplified map</h3>
+        <BevMap/>
+      </div>
+    </div>
+    <div class="shell results">
+      <h3 class="results-title" data-reveal>The mapping system on a working berry farm, as published at SATNAC 2026</h3>
+      <dl class="figures">
+        <div data-reveal><dt>YOLOE detection on the robot’s Jetson Orin NX</dt><dd>30.3 fps</dd></div>
+        <div data-reveal><dt>The full mapping pipeline in the field (13.7 Hz indoors)</dt><dd>20.9 Hz</dd></div>
+        <div data-reveal><dt>Mean error in inter-row spacing against surveyed ground truth</dt><dd>0.062 m</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <div class="band band-pair">
+    <figure><div class="frame"><Image src={field.husky.src} alt={field.husky.alt} widths={[600, 1000, 1200]} sizes="(max-width: 860px) 100vw, 40vw" format="webp" loading="eager" decoding="async"/></div><figcaption>{field.husky.caption}</figcaption></figure>
+    <figure><div class="frame"><Image src={field.tunnelInside.src} alt={field.tunnelInside.alt} widths={[800, 1200, 1600]} sizes="(max-width: 860px) 100vw, 60vw" format="webp" loading="eager" decoding="async" class="drift"/></div><figcaption>{field.tunnelInside.caption}</figcaption></figure>
+  </div>
+
+  <section class="vase field-cyan" aria-labelledby="vase-title" data-chapter="cyan">
+    <div class="shell vase-head">
+      <h2 id="vase-title" class="section-title" data-reveal>Ask for a vase</h2>
+      <p data-reveal>I benchmarked YOLOE, YOLO-World, OWLv2 and Grounding DINO for SANA’s map. In this project, prompts that describe how a thing looks, a container such as “vase”, gave the robot more useful detections than prompts that name what a thing is.</p>
+    </div>
+    <div class="shell specimens" aria-hidden="true">
+      <div class="specimen" data-reveal><span>Vase</span><p>The appearance prompt</p></div>
+      <div class="specimen" data-reveal><span>Plant</span><p>A semantic prompt, for example</p></div>
+    </div>
+  </section>
+
+  <section class="work" aria-labelledby="work-title" data-chapter="paper">
+    <div class="shell work-head">
+      <h2 id="work-title" class="section-title" data-reveal>Nine builds</h2>
+      <p data-reveal>Field robots, embedded hardware, applied machine learning and a scale for a bird. Each spine opens the full write-up.</p>
+    </div>
+    <ul class="shell shelf" data-reveal>
+      {projects.map(p => <li><a class="spine" href={`/projects/${p.data.slug}/`}><span class="spine-title">{spineTitle[p.data.slug] ?? p.data.title}</span><span class={`spine-tag tag-${tagField[p.data.tags[0]]}`}>{p.data.tags[0]}</span></a></li>)}
+    </ul>
+    <div class="shell pair">
+      <figure data-reveal><a href="/projects/hornbill-monitoring/"><Image src={found.hornbill.src} alt={found.hornbill.alt} widths={[600, 1000]} sizes="(max-width: 700px) 100vw, 50vw" format="webp" loading="lazy"/></a><figcaption>{found.hornbill.caption} I designed the electronics and controls for a team-built perch scale that weighs the birds at the nest for UCT researchers.</figcaption></figure>
+      <figure data-reveal><a href="/projects/cocoa-detection/"><Image src={found.cocoa.src} alt={found.cocoa.alt} widths={[600, 1000]} sizes="(max-width: 700px) 100vw, 50vw" format="webp" loading="lazy"/></a><figcaption>{found.cocoa.caption} My solo entry to the IndabaX cocoa-contamination challenge placed 5th, at about 0.743 mAP@50, trained on a 4 GB laptop GPU.</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="toolkit field-orange" aria-labelledby="toolkit-title" data-chapter="orange">
+    <div class="shell">
+      <h2 id="toolkit-title" class="section-title" data-reveal>Across the whole stack</h2>
+      <ul class="capabilities">{capabilities.map(([name, detail]) => <li data-reveal><span class="capability">{name}</span><span class="capability-detail">{detail}</span></li>)}</ul>
+    </div>
+  </section>
+
+  <section class="record" aria-labelledby="record-title" data-chapter="paper">
+    <div class="shell record-grid">
+      <figure class="record-picture shutter" data-reveal><div class="frame"><Image src={campus.src} alt={campus.alt} widths={[700]} sizes="(max-width: 800px) 100vw, 45vw" format="webp" loading="lazy" class="drift"/></div><figcaption>{campus.caption}</figcaption></figure>
+      <div class="record-list">
+        <h2 id="record-title" class="section-title" data-reveal>Teaching and industry</h2>
+        <p class="list-group" data-reveal>University of Cape Town</p>
+        <ul class="rows">{uct.map(e => <li data-reveal><span><strong>{e.role}</strong> {e.course}</span><span class="row-value">{e.date}</span></li>)}</ul>
+        <p class="list-group" data-reveal>Industry and before</p>
+        <ul class="rows">{industry.map(e => <li data-reveal><span><strong>{e.role}</strong> {e.org}</span><span class="row-value">{e.date}</span></li>)}</ul>
+        <a class="inline-link" href="/experience/" data-reveal>Everything I did in each role</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="next field-yellow" aria-labelledby="next-title" data-chapter="yellow">
+    <div class="shell next-grid">
+      <h2 id="next-title" class="section-title next-title" data-reveal>Robots that keep learning</h2>
+      <figure class="next-picture shutter" data-reveal><div class="frame"><Image src={robots.src} alt={robots.alt} widths={[700, 1200, 1600]} sizes="(max-width: 1520px) 100vw, 1520px" format="webp" loading="lazy" class="drift"/></div><figcaption>{robots.caption}</figcaption></figure>
+      <dl class="side-facts" data-reveal>
+        <div><dt>Based in</dt><dd>Cape Town, South Africa</dd></div>
+        <div><dt>From</dt><dd>Kenya</dd></div>
+        <div><dt>Supervisor</dt><dd>Dr. Paul Amayo</dd></div>
+        <div><dt>Publications</dt><dd>SATNAC 2026; one under review</dd></div>
+      </dl>
+      <p class="next-statement" data-reveal>For a PhD I want to study lifelong, self-improving semantic autonomy: maps and navigation policies that keep adapting across seasons and fields.</p>
+      <div class="next-side" data-reveal>
+      <div class="next-lists">
+        <div><p class="list-group">Education</p><ul class="rows"><li><span>MSc (Eng) Robotics & Computer Vision, UCT</span><span class="row-value">2025–27</span></li><li><span>BSc (Eng) Electrical & Computer, First Class</span><span class="row-value">2021–24</span></li><li><span>KCSE, Lenana School</span><span class="row-value">2015–18</span></li></ul></div>
+        <div><p class="list-group">Robots I have worked with</p><ul class="rows"><li><span>Clearpath Husky A300</span><span class="row-value">Wheeled</span></li><li><span>Clearpath Husky A200</span><span class="row-value">Wheeled</span></li><li><span>Catarob</span><span class="row-value">Surface vessel</span></li><li><span>Unitree Go1</span><span class="row-value">Quadruped</span></li><li><span>Unitree G1</span><span class="row-value">Humanoid</span></li></ul></div>
+      </div>
+      <a class="inline-link" href="/research/">Research interests and the thesis</a>
+      </div>
+    </div>
+  </section>
+
+  <ContactField/>
+</Layout>

@@ -1,0 +1,30 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import PageHead from '../components/PageHead.astro';
+import { portrait, robots, uct, field } from '../data/media';
+---
+<Layout title="About">
+  <PageHead field="yellow" title="Engineering beyond the lab" lead="Hardware, embedded software and machine learning, connected by the work of making a real system run." picture={uct}/>
+  <section class="shell page-body page-grid" aria-labelledby="about-title" data-chapter="paper">
+    <div class="prose">
+      <h2 id="about-title">I build at the intersections</h2>
+      <p>I’m an electrical and computer engineer based in Cape Town, South Africa. I hold a First Class Honours BSc (Eng) in Electrical & Computer Engineering from the University of Cape Town. I’m now completing an MSc (Eng) in Robotics & Computer Vision under Dr. Paul Amayo as a Mastercard Foundation Scholar.</p>
+      <p>My thesis, SANA (Semantic Agricultural Navigation Agent), is an autonomous row-crop navigation system. It combines open-vocabulary semantic mapping with a learned navigation policy and runs on a Clearpath Husky A300 robot.</p>
+      <p>Alongside research I lecture and TA embedded systems at UCT. I’ve redesigned practical programmes, built assessment tooling and supervised undergraduate and Honours projects. Before that I did hardware testing and electronics at Shrike Marine and worked in client-facing banking at Equity Bank Kenya.</p>
+      <blockquote>I care about robots that work outside the lab, on real farms, with real sensors and real constraints.</blockquote>
+      <h2>Platforms I’ve worked with</h2>
+      <p class="plain-list"><span>Clearpath Husky A300</span><span>Clearpath Husky A200</span><span>Catarob surface vessel</span><span>Unitree Go1 quadruped</span><span>Unitree G1 humanoid</span></p>
+      <figure class="prose-picture"><Image src={robots.src} alt={robots.alt} widths={[700, 1200]} sizes="(max-width: 1100px) 100vw, 60vw" format="webp" loading="lazy"/><figcaption>{robots.caption}</figcaption></figure>
+      <h2>Teaching as engineering practice</h2>
+      <p>Explaining a system clearly is part of understanding it. My teaching spans microcontrollers, embedded communications, sampling and conversion, and high-performance embedded systems.</p>
+      <p>I use predict-before-measure labs, datasheet-based assessments and integrative projects to connect theory with hardware. I also supervise work on agricultural 3D scanning and a digital twin of the UCT AC Microgrid Test System.</p>
+      <a class="inline-link" href="/experience/">Experience and education</a>
+    </div>
+    <aside>
+      <figure class="portrait shutter" data-reveal><div class="frame"><Image src={portrait.src} alt={portrait.alt} widths={[400, 700, 1000]} sizes="(max-width: 1100px) 100vw, 35vw" format="webp" loading="eager"/></div></figure>
+      <div class="panel field-green" data-reveal><h2>Based in Cape Town</h2><p>Kenyan, working in South Africa.</p><a class="inline-link" href="/contact/">Let’s connect</a></div>
+      <figure class="side-picture shutter" data-reveal><div class="frame"><Image src={field.huskyBlueberry.src} alt={field.huskyBlueberry.alt} widths={[500, 900]} sizes="(max-width: 1100px) 100vw, 35vw" format="webp"/></div><figcaption>{field.huskyBlueberry.caption}</figcaption></figure>
+    </aside>
+  </section>
+</Layout>

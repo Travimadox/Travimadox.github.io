@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHead from '../components/PageHead.astro';
+import { experience } from '../data/site';
+import { uct } from '../data/media';
+---
+<Layout title="Experience & education">
+  <PageHead field="cyan" title="Build, test, teach" lead="Engineering practice and teaching reinforce each other. I bring both to the systems I build." picture={uct}/>
+  <section class="shell page-body" aria-labelledby="roles-title" data-chapter="paper">
+    <h2 id="roles-title" class="sr-only">Roles</h2>
+    <div class="timeline">{experience.map(e => <article class="timeline-entry" data-reveal><p class="entry-date">{e.date}</p><div><h2>{e.role}</h2><p class="entry-org">{e.org} · {e.course}</p><p class="entry-text">{e.text}</p></div></article>)}</div>
+    <section class="education" aria-labelledby="education-title">
+      <h2 id="education-title" class="section-title" data-reveal>Education</h2>
+      <div class="education-grid">
+        <article data-reveal><p>2025–2027, in progress</p><h3>MSc (Eng) Electrical Engineering</h3><p>Robotics & Computer Vision, University of Cape Town. Thesis: SANA. Supervisor: Dr. Paul Amayo. Mastercard Foundation Scholar.</p></article>
+        <article data-reveal><p>2021–2024</p><h3>BSc (Eng) Electrical & Computer Engineering</h3><p>First Class Honours, University of Cape Town.</p></article>
+        <article data-reveal><p>2015–2018</p><h3>Kenya Certificate of Secondary Education</h3><p>Lenana School.</p></article>
+      </div>
+    </section>
+  </section>
+</Layout>

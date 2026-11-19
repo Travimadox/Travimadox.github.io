@@ -1,0 +1,100 @@
+---
+// A toy version of SANA's egocentric bird's-eye-view map, drawn in the browser.
+// The visitor moves the robot in the field; the map and the features the policy reads update.
+---
+<div class="bev" data-bev>
+  <div class="bev-stage">
+    <canvas class="bev-canvas" width="640" height="640" role="img" aria-label="Egocentric map of crop rows around the robot">
+      A grid of 5 cm cells around the robot: crop rows in green, free soil in brown, an obstacle in orange.
+    </canvas>
+    <dl class="bev-readout">
+      <div><dt>Row offset</dt><dd><output data-out="offset">0 cm</output></dd></div>
+      <div><dt>Heading error</dt><dd><output data-out="heading">0°</output></dd></div>
+      <div><dt>Left row density</dt><dd><output data-out="left">—</output></dd></div>
+      <div><dt>Right row density</dt><dd><output data-out="right">—</output></dd></div>
+      <div><dt>Obstacle clearance</dt><dd><output data-out="clearance">—</output></dd></div>
+    </dl>
+  </div>
+  <div class="bev-controls">
+    <label>Offset from the row centre <input type="range" min="-30" max="30" step="1" value="8" data-in="offset"/></label>
+    <label>Heading <input type="range" min="-30" max="30" step="1" value="-6" data-in="heading"/></label>
+    <button type="button" class="button button-quiet" data-in="rock" aria-pressed="false">Put a rock in the lane</button>
+  </div>
+  <p class="bev-status" aria-live="polite" data-out="status">The policy follows the row.</p>
+  <p class="bev-note">A simplified model of the map, computed in your browser from SANA’s feature definitions. Not recorded robot data.</p>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-bev]');
+  const canvas = root?.querySelector<HTMLCanvasElement>('canvas');
+  const ctx = canvas?.getContext('2d');
+  if (root && canvas && ctx) {
+    const V = 64, CELL = 0.05, ORIGIN = 52;               // 64 × 64 cells of 5 cm; robot centre on row 52
+    const ROWS = [-1.875, -1.125, -0.375, 0.375, 1.125, 1.875];
+    const ROCK = { x: 0.06, y: 1.55, r: 0.15 };
+    const colour = { unknown: '#161612', soil: '#4a3f2b', crop: '#b6e05a', rock: '#f9a21f', robot: '#ffd23f', body: '#0a0a0a' };
+    const input = (k: string) => root.querySelector<HTMLInputElement>(`[data-in="${k}"]`)!;
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+    const rockButton = root.querySelector<HTMLButtonElement>('[data-in="rock"]')!;
+    let rock = false;
+    const hash = (n: number) => { const s = Math.sin(n * 127.1) * 43758.5453; return s - Math.floor(s); };
+
+    // What occupies a point in the field (world frame, metres)
+    const classify = (xw: number, yw: number) => {
+      if (rock && Math.hypot(xw - ROCK.x, yw - ROCK.y) < ROCK.r) return 'rock';
+      for (const [i, rx] of ROWS.entries()) {
+        if (Math.abs(xw - rx) > 0.2) continue;
+        const k = Math.round(yw / 0.22);
+        if (hash(k * 7 + i) < 0.12) continue;              // a missing plant
+        const radius = 0.08 + hash(k * 13 + i) * 0.07;
+        if (Math.hypot(xw - rx, yw - k * 0.22) < radius) return 'crop';
+      }
+      return 'soil';
+    };
+
+    const draw = () => {
+      const d = Number(input('offset').value) / 100, th = Number(input('heading').value) * Math.PI / 180;
+      const c = Math.cos(th), s = Math.sin(th), px = canvas.width / V;
+      let left = [0, 0], right = [0, 0], clear = Infinity;
+      ctx.fillStyle = colour.unknown; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let r = 0; r < V; r++) for (let q = 0; q < V; q++) {
+        const x = (q - V / 2 + 0.5) * CELL, y = (ORIGIN - r - 0.5) * CELL;   // ego frame: x right, y forward
+        const seen = (y > 0.45 && Math.abs(Math.atan2(x, y - 0.3)) < 0.9) || Math.hypot(x, y) < 0.75;
+        if (!seen) continue;
+        const kind = classify(d + x * c + y * s, -x * s + y * c);
+        if (y > 0.45 && y < 2.3) {
+          if (x > -0.6 && x < -0.18) { left[1]++; if (kind === 'crop') left[0]++; }
+          if (x < 0.6 && x > 0.18) { right[1]++; if (kind === 'crop') right[0]++; }
+          if (kind === 'rock' && Math.abs(x) < 0.36) clear = Math.min(clear, y - 0.5);
+        }
+        ctx.fillStyle = colour[kind as keyof typeof colour];
+        ctx.fillRect(q * px + 0.5, r * px + 0.5, px - 1, px - 1);
+      }
+      // The robot: a Husky-sized footprint (about 0.99 × 0.67 m), fixed at the map origin
+      const w = 0.67 / CELL * px, h = 0.99 / CELL * px, cx = canvas.width / 2, cy = (ORIGIN) * px;
+      ctx.fillStyle = colour.body; ctx.fillRect(cx - w / 2, cy - h / 2, w, h);
+      ctx.fillStyle = colour.robot; ctx.fillRect(cx - w / 2 + px, cy - h / 2 + px * 2.5, w - px * 2, h - px * 5);
+      ctx.fillStyle = colour.body; ctx.fillRect(cx - px * 2, cy - h / 2 + px * 0.6, px * 4, px * 1.4);
+
+      const pct = (a: number[]) => `${Math.round(100 * a[0] / Math.max(1, a[1]))}%`;
+      const side = (v: number, l: string, r: string) => v === 0 ? '' : v < 0 ? l : r;
+      out('offset').textContent = `${Math.abs(d * 100).toFixed(0)} cm ${side(d, 'left', 'right')}`.trim();
+      out('heading').textContent = `${Math.abs(th * 180 / Math.PI).toFixed(0)}° ${side(th, 'left', 'right')}`.trim();
+      out('left').textContent = pct(left); out('right').textContent = pct(right);
+      out('clearance').textContent = clear === Infinity ? 'Clear ahead' : `${Math.max(0, clear).toFixed(2)} m`;
+      out('status').textContent = clear < 1.1 ? 'The SafetyFilter overrides the policy: stop before the rock.'
+        : Math.abs(d) > 0.15 || Math.abs(th) > 0.26 ? 'The policy steers back toward the centre of the lane.'
+        : 'The policy follows the row.';
+      canvas.setAttribute('aria-label', `Egocentric map: robot ${out('offset').textContent} of the lane centre, heading ${out('heading').textContent}, ${out('clearance').textContent.toLowerCase()}.`);
+    };
+
+    root.querySelectorAll('input').forEach(el => el.addEventListener('input', draw));
+    rockButton.addEventListener('click', () => {
+      rock = !rock;
+      rockButton.setAttribute('aria-pressed', String(rock));
+      rockButton.textContent = rock ? 'Clear the lane' : 'Put a rock in the lane';
+      draw();
+    });
+    draw();
+  }
+</script>

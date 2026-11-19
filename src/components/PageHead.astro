@@ -1,0 +1,19 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+type Picture = { src: ImageMetadata; alt: string; caption: string; natural?: boolean; focus?: string };
+type Clip = { src: string; poster: string; caption: string };
+interface Props { title: string; lead: string; field: 'yellow' | 'green' | 'cyan' | 'orange'; picture?: Picture; clip?: Clip; }
+const { title, lead, field, picture, clip } = Astro.props;
+---
+<header class:list={['page-head', `field-${field}`, { 'has-media': picture || clip }]} data-chapter={field}>
+  <div class="shell page-head-grid">
+    <div class="page-head-copy">
+      <h1 data-reveal>{title}</h1>
+      <p class="lead" data-reveal>{lead}</p>
+      <slot/>
+    </div>
+    {picture && <figure class="page-head-media shutter" data-reveal><div class="frame"><Image src={picture.src} alt={picture.alt} widths={[600, 1000, 1400]} sizes="(max-width: 860px) 100vw, 42vw" format="webp" loading="eager" class:list={[{ natural: picture.natural }]} style={picture.focus ? `object-position: ${picture.focus}` : undefined}/></div><figcaption>{picture.caption}</figcaption></figure>}
+    {!picture && clip && <figure class="page-head-media shutter" data-reveal><div class="frame"><video autoplay muted loop playsinline preload="metadata" poster={clip.poster} width="854" height="480" aria-hidden="true"><source src={clip.src} type="video/webm"/></video></div><figcaption>{clip.caption}</figcaption></figure>}
+  </div>
+</header>

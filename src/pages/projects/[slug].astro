@@ -1,0 +1,38 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import PageHead from '../../components/PageHead.astro';
+import { projectPicture, projectGallery } from '../../data/media';
+export async function getStaticPaths() { return (await getCollection('projects')).map(project => ({ params: { slug: project.data.slug }, props: { project } })); }
+const { project } = Astro.props; const p = project.data; const { Content } = await render(project);
+const field = { Robotics: 'yellow', 'ML/CV': 'green', Embedded: 'cyan', Research: 'orange' }[p.tags[0]];
+const picture = projectPicture[p.slug];
+const gallery = projectGallery[p.slug] ?? [];
+const [name, longName] = p.title.split(' — ');
+const linkLabel = { github: 'Code on GitHub', paper: 'Paper (PDF)', demo: 'Project page' };
+---
+<Layout title={p.title} description={p.summary}>
+  <PageHead field={field as 'yellow'} title={name} lead={longName ? `${longName}. ${p.summary}` : p.summary} picture={p.cover ? undefined : picture}>
+    <p class="page-meta" data-reveal>{p.tags.join(' · ')}{p.dates && ` · ${p.dates}`}<br/>{p.stack.join(', ')}</p>
+    <a class="inline-link back-link" href="/projects/">All projects</a>
+  </PageHead>
+  <article class="shell page-body page-grid" data-chapter="paper">
+    <div class="prose"><Content/></div>
+    <aside>
+      {p.cover ? <figure class="side-picture"><Image src={p.cover} alt={p.coverAlt!} widths={[500,900]} sizes="(max-width: 1100px) 100vw, 35vw" format="webp"/><figcaption>{p.coverAlt}</figcaption></figure>
+        : null}
+      {p.slug === 'sana' && <ol class="flow-steps" aria-label="SANA data flow, from sensing to control" data-reveal>
+        <li><strong>Stereo perception</strong><span>YOLOE, semantic observations</span></li>
+        <li class="is-map"><strong>Persistent semantic BEV</strong><span>The central interface, 5 cm cells</span></li>
+        <li><strong>Learned navigation</strong><span>Behavioural cloning, DAgger</span></li>
+        <li><strong>Control and SafetyFilter</strong><span>Row following, headland turns</span></li>
+      </ol>}
+      <div class="panel field-yellow" data-reveal>
+        <h2>Links</h2>
+        <div class="link-list">{Object.keys(p.links).length ? Object.entries(p.links).map(([key, url]) => <a class="inline-link" href={url}>{linkLabel[key as keyof typeof linkLabel]}</a>) : <p>Public links are pending confirmation.</p>}<a class="inline-link" href="/contact/">Ask me about this work</a></div>
+      </div>
+    </aside>
+  </article>
+  {gallery.length > 0 && <section class="shell gallery" aria-label="More photographs" data-chapter="paper">{gallery.map(g => <figure class="shutter" data-reveal><div class="frame"><Image src={g.src} alt={g.alt} widths={[600, 1000]} sizes="(max-width: 600px) 100vw, 50vw" format="webp" loading="lazy"/></div><figcaption>{g.caption}</figcaption></figure>)}</section>}
+</Layout>

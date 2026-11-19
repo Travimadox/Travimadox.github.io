@@ -1,0 +1,18 @@
+---
+import { site } from '../data/site';
+interface Props { heading?: 'h1' | 'h2'; }
+const { heading = 'h2' } = Astro.props;
+const [user, domain] = site.email.split('@');
+---
+<section class="contact-field field-ink" aria-labelledby="contact-title" data-chapter="ink">
+  <div class="shell contact-inner">
+    {heading === 'h1'
+      ? <div><h1 id="contact-title" class="section-title" data-reveal>Get in touch</h1><p class="contact-ask contact-ask-below" data-reveal>Hiring for robotics, embedded or vision work, or curious about the research? Write to me.</p></div>
+      : <h2 id="contact-title" class="contact-ask" data-reveal>Hiring for robotics, embedded or vision work? Write to me.</h2>}
+    <a class="contact-email" href={`mailto:${site.email}`} data-reveal><span>{user}@</span><span>{domain}</span></a>
+    <div class="contact-corners">
+      <p>Cape Town, South Africa{site.openToOpportunities && <><br/>Open to embedded, ML/CV and robotics roles</>}</p>
+      <p class="contact-links"><a href={site.linkedin}>LinkedIn</a><a href={site.github}>GitHub</a>{site.cv ? <a href={site.cv}>CV</a> : <span>CV on request</span>}</p>
+    </div>
+  </div>
+</section>

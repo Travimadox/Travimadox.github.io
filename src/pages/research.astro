@@ -1,0 +1,30 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import PageHead from '../components/PageHead.astro';
+import { footage, field } from '../data/media';
+import { paper } from '../data/site';
+---
+<Layout title="Research" description="Semantic perception, open-vocabulary mapping and learned navigation for field robotics. MSc research at the University of Cape Town.">
+  <PageHead field="green" title="Understand the field, then drive it" lead="My research connects semantic perception, persistent mapping and learned policies for agricultural robots." clip={footage.wheat}/>
+  <section class="shell page-body page-grid" aria-labelledby="thesis-title" data-chapter="paper">
+    <div class="prose">
+      <h2 id="thesis-title">MSc thesis: SANA</h2>
+      <p>I am completing an MSc (Eng) in Electrical Engineering, focused on Robotics & Computer Vision, in the African Robotics Unit at the University of Cape Town (April 2025 to an expected February 2027), under Dr. Paul Amayo. I am a Mastercard Foundation Scholar.</p>
+      <p>SANA, the Semantic Agricultural Navigation Agent, combines open-vocabulary semantic mapping with a learned navigation policy on a Clearpath Husky A300. Its persistent bird’s-eye-view map is the interface between perception and navigation.</p>
+      <p>The semantic mapping pipeline runs live on the robot. On a commercial berry farm the full pipeline ran at 20.9 Hz (13.7 Hz indoors), with YOLOE at 30.3 fps onboard and a 0.062 m mean absolute error in inter-row spacing against surveyed ground truth, without any crop- or farm-specific detector training. I evaluate the navigation system against Visual Teach & Repeat with four pre-registered hypotheses.</p>
+      <a class="button" href="/projects/sana/">Read the SANA case study</a>
+      <h2>Research interests</h2>
+      <ul><li>Semantic perception and open-vocabulary mapping for field robotics</li><li>Learned navigation through imitation learning, behavioural cloning and DAgger</li><li>African agricultural robotics</li><li>Embedded and high-performance systems: FPGA, microcontrollers and edge AI on Jetson</li></ul>
+      <h2>Looking toward a PhD</h2>
+      <p>I want to investigate lifelong, self-improving semantic autonomy: robots that keep adapting their semantic maps and navigation policies across seasons and fields.</p>
+      <p>This is a future research direction, rather than a capability claimed for the current system.</p>
+    </div>
+    <aside>
+      <figure class="side-picture shutter" data-reveal><div class="frame"><Image src={field.huskyBlueberry.src} alt={field.huskyBlueberry.alt} widths={[500, 900]} sizes="(max-width: 1100px) 100vw, 35vw" format="webp"/></div><figcaption>{field.huskyBlueberry.caption}</figcaption></figure>
+      <figure class="side-picture shutter" data-reveal><div class="frame"><Image src={field.husky.src} alt={field.husky.alt} widths={[500, 900]} sizes="(max-width: 1100px) 100vw, 35vw" format="webp"/></div><figcaption>{field.husky.caption}</figcaption></figure>
+      <div class="panel field-yellow" data-reveal><h2>Publications</h2><p><strong>{paper.authors}.</strong> {paper.title}. <em>{paper.venue}.</em> Full paper.</p><div class="link-list" style="margin-top: 16px"><a class="inline-link" href={paper.page}>Project page</a><a class="inline-link" href={paper.pdf}>PDF</a><a class="inline-link" href={paper.code}>Code</a></div><p style="margin-top: 20px">Under review: the SANA navigation paper, IEEE ICRA 2027. The title is withheld during double-anonymous review.</p></div>
+      <div class="panel field-cyan" data-reveal><h2>Shared questions?</h2><p>I welcome conversations about semantic autonomy, field robotics and future PhD research.</p><a class="inline-link" href="/contact/">Get in touch</a></div>
+    </aside>
+  </section>
+</Layout>

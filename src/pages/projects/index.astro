@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import PageHead from '../../components/PageHead.astro';
+import { field, projectPicture } from '../../data/media';
+const projects = (await getCollection('projects')).sort((a,b) => a.data.order-b.data.order);
+---
+<Layout title="Selected work" description="Explore Travimadox Webb’s robotics, embedded systems and machine-learning projects, led by the SANA agricultural navigation system.">
+  <PageHead field="yellow" title="Ideas, built and tested" lead="Field robotics, embedded hardware and applied machine learning. Each write-up covers the problem, what I built, and what comes next." picture={field.tunnelOutside}/>
+  <section class="shell page-body" aria-labelledby="index-title" data-chapter="paper">
+    <h2 id="index-title" class="sr-only">All projects</h2>
+    <div class="filters" role="group" aria-label="Filter projects">{['All', 'Robotics', 'ML/CV', 'Embedded', 'Research'].map(tag => <button type="button" data-filter={tag} aria-pressed={tag === 'All'}>{tag}</button>)}</div>
+    <p class="sr-only" role="status" id="filter-status">Showing all {projects.length} projects</p>
+    <div class="project-list">{projects.map(({ data: p }) => { const picture = projectPicture[p.slug]; return (
+      <article class:list={['project-card', { 'has-picture': picture }]} data-tags={p.tags.join('|')} data-reveal>
+        <div><h2><a href={`/projects/${p.slug}/`}>{p.title.split(' — ')[0]}</a></h2><p class="project-tags">{p.tags.join(' · ')}{p.dates && ` · ${p.dates}`}</p><p class="project-stack">{p.stack.join(', ')}</p></div>
+        <p>{p.summary}</p>
+        {picture && <Image class:list={['project-picture', { natural: picture.natural }]} src={picture.src} alt="" widths={[400, 700]} sizes="(max-width: 600px) 100vw, 25vw" format="webp" loading="lazy"/>}
+      </article>
+    ); })}</div>
+  </section>
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-tags]');
+    buttons.forEach(button => button.addEventListener('click', () => {
+      buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+      let count = 0;
+      cards.forEach(card => { card.hidden = button.dataset.filter !== 'All' && !card.dataset.tags?.split('|').includes(button.dataset.filter!); if (!card.hidden) count++; });
+      document.querySelector('#filter-status')!.textContent = `Showing ${count} ${button.dataset.filter === 'All' ? '' : button.dataset.filter + ' '}projects`;
+    }));
+  </script>
+</Layout>

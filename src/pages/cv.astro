@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHead from '../components/PageHead.astro';
+import { Content } from '../data/cv.md';
+import { portrait } from '../data/media';
+const pdf = '/media/travimadox-webb-cv.pdf';
+---
+<Layout title="Curriculum vitae" description="The full CV of Travimadox Webb: robotics research, teaching, publications, industry experience and technical skills.">
+  <PageHead field="yellow" title="Curriculum vitae" lead="Robotics researcher and educator building semantic perception and navigation for unstructured agricultural environments." picture={{ ...portrait, caption: 'Travimadox Webb, Cape Town, 2026.' }}>
+    <p class="cv-actions" data-reveal><a class="button" href={pdf} download>Download the PDF</a></p>
+  </PageHead>
+  <section class="shell page-body cv" aria-label="Full CV" data-chapter="paper">
+    <div class="prose cv-prose"><Content/></div>
+  </section>
+</Layout>
